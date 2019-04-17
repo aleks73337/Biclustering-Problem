@@ -46,6 +46,7 @@ float count_score(std::vector< std::pair< std::vector<int>, std::vector<int> > >
 std::tuple<std::vector<std::vector<int>>, int, int> read_file(const std::string fileName)
 {
 	std::ifstream infile(fileName);
+
 	std::string line;
 	int counter = 0;
 	int machines;
@@ -172,6 +173,10 @@ bool save_output(const std::vector< std::pair< std::vector<int>, std::vector<int
 {
 	std::fstream file;
     file.open(filename, std::fstream::out);
+
+    if (!file.is_open())
+    	return false;
+
     std::vector<int> machines(nMachines + 1, 0);
     std::vector<int> parts(nParts + 1, 0);
     int nClusters = clusters.size();
@@ -201,8 +206,8 @@ bool save_output(const std::vector< std::pair< std::vector<int>, std::vector<int
 
 int main()
 {
-	srand(1);
-	std::string fileName = "20x20.txt";
+	srand(time(NULL));
+	std::string fileName = "30x90.txt";
 	std::vector<std::vector<int>> partsMatches;
 	int machines, parts;
 	std::tie(partsMatches, machines, parts) =  read_file(fileName);
