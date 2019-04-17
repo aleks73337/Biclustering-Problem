@@ -9,7 +9,39 @@
 
 float count_score(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, std::vector< std::vector<int> >& partsMatches)
 {
-	return 1.0;
+	int n1Clust = 0;
+	int n0Clust = 0;
+	int n1All = 0;
+
+	std::cout << "DEBUG";
+
+	for (auto cluster : clusters)
+	{
+		for (auto machine : cluster.first)
+		{
+			for (auto part : cluster.second)
+			{
+				if (partsMatches[machine][part] == 1)
+					n1Clust++;
+				else
+					n0Clust++;
+			}
+		}
+	}
+
+	
+	for (int i = 0; i < partsMatches.size(); i++)
+	{
+		for (auto part : partsMatches[i])
+		{
+			if (partsMatches[i][part] == 1)
+				n1All++;
+		}
+	}
+
+
+
+	return (n1Clust / (n1All + n0Clust));
 }
 
 std::tuple<std::vector<std::vector<int>>, int, int> read_file(const std::string fileName)
@@ -105,7 +137,7 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 	do
 	{
 		std::cout << "New decision!" << std::endl;
-		int n_clusters = 3;
+		int n_clusters = 4;
 		for (int i = 0; i < n_clusters; i++)
 		{
 			std::pair< std::vector<int>, std::vector<int> > cluster;
@@ -174,14 +206,9 @@ int main()
 	std::vector<std::vector<int>> partsMatches;
 	int machines, parts;
 	std::tie(partsMatches, machines, parts) =  read_file("20x20.txt");
-	for (auto vec : partsMatches)
-	{
-		for (auto el : vec)
-			std::cout << el << " ";
-		std::cout << std::endl;
-	}
-
 	auto clusters = get_start_decision(partsMatches, machines, parts);
-	save_output(clusters, "test.txt", machines, parts);
+	float result = count_score(clusters, partsMatches);
+	std::cout << result;
+	// save_output(clusters, "test.txt", machines, parts);
 	return 1;
 }
