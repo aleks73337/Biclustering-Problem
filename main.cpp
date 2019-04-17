@@ -7,6 +7,11 @@
 #include <algorithm>
 
 
+float count_score(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, std::vector< std::vector<int> >& partsMatches)
+{
+	return 1.0;
+}
+
 std::tuple<std::vector<std::vector<int>>, int, int> read_file(const std::string fileName)
 {
 	std::ifstream infile(fileName);
@@ -90,18 +95,17 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 {
 	std::vector< std::pair< std::vector<int>, std::vector<int> > > clusters;
 	std::vector<int> machines_seq, parts_seq;
+	
 	for (int i = 1; i <= machines; i++)
-	{
 		machines_seq.push_back(i);
-	}
+
 	for (int i = 1; i <= parts; i++)
-	{
 		parts_seq.push_back(i);
-	}
+
 	do
 	{
 		std::cout << "New decision!" << std::endl;
-		int n_clusters = 8;
+		int n_clusters = 3;
 		for (int i = 0; i < n_clusters; i++)
 		{
 			std::pair< std::vector<int>, std::vector<int> > cluster;
@@ -116,11 +120,15 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 		for (auto cluster : clusters)
 		{
 			std::cout << " Next cluster, machines: ";
+
 			for (auto el : cluster.first)
 				std::cout << el << " ";
+
 			std::cout << std::endl << " Parts: ";
+
 			for (auto el : cluster.second)
 				std::cout << el << " ";
+
 			std::cout << std::endl;
 		}
 	} while(!is_valid(clusters, machines, parts));
@@ -128,14 +136,52 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 	return clusters;
 }
 
+bool save_output(const std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, 
+				 const std::string& filename, const int& nMachines, const int& nParts)
+{
+	std::fstream file;
+    file.open(filename, std::fstream::out);
+    std::vector<int> machines(nMachines + 1, 0);
+    std::vector<int> parts(nParts + 1, 0);
+    int nClusters = clusters.size();
+
+	for (int i = 0; i < nClusters; i++)
+	{
+		for (auto machine : clusters[i].first)
+			machines[machine] = i + 1;
+		for (auto part : clusters[i].second)
+			parts[part] = i + 1;
+	}
+
+	machines.erase(machines.begin());
+	parts.erase(parts.begin());
+
+    for (auto el : machines)
+    	file << el << " ";
+
+    file << std::endl;
+
+    for (auto el : parts)
+    	file << el << " ";
+
+    file.close();
+    return true;
+}
 
 int main()
 {
 	srand(1);
 	std::vector<std::vector<int>> partsMatches;
 	int machines, parts;
-	std::tie(partsMatches, machines, parts) =  read_file("30x50.txt");
-	auto clusters = get_start_decision(partsMatches, machines, parts);
+	std::tie(partsMatches, machines, parts) =  read_file("20x20.txt");
+	for (auto vec : partsMatches)
+	{
+		for (auto el : vec)
+			std::cout << el << " ";
+		std::cout << std::endl;
+	}
 
+	auto clusters = get_start_decision(partsMatches, machines, parts);
+	save_output(clusters, "test.txt", machines, parts);
 	return 1;
 }
