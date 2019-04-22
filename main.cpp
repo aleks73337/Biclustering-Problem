@@ -137,7 +137,7 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 	do
 	{
 		std::cout << "New decision!" << std::endl;
-		int n_clusters = 4;
+		int n_clusters = 8;
 		for (int i = 0; i < n_clusters; i++)
 		{
 			std::pair< std::vector<int>, std::vector<int> > cluster;
@@ -166,6 +166,50 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 	} while(!is_valid(clusters, machines, parts));
 	
 	return clusters;
+}
+
+void devide(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters)
+{
+	//create 2 new vectors with machines
+	int nChange = rand() % clusters.size();
+	auto& toSplit = clusters[nChange];
+	int nMachines = toSplit.first.size();
+	int nLMachines = nMachines % 2 == 0 ? nMachines / 2 : nMachines / 2 + 1;
+	int nRMachines = nMachines - nLMachines;
+	std::vector<int> lMachines(nLMachines, 0),
+					 rMachines(nRMachines, 0);
+	std::copy(toSplit.first.begin(), toSplit.first.begin() + nLMachines, lMachines.begin());
+	std::copy(toSplit.first.begin() + nLMachines, toSplit.first.end(), rMachines.begin());
+
+	int nParts = toSplit.second.size();
+	int nLParts = nParts % 2 == 0 ? nParts / 2 : nParts / 2 + 1;
+	int nRParts = nParts - nLParts;
+	std::vector<int> lParts(nLParts, 0),
+				 	 rParts(nRParts, 0);
+	std::copy(toSplit.second.begin(), toSplit.second.begin() + nLParts, lParts.begin());
+	std::copy(toSplit.second.begin() + nLParts, toSplit.second.end(), rParts.begin());
+	clusters.erase(clusters.begin() + nChange);
+
+	std::pair< std::vector<int>, std::vector<int> > lPair(lMachines, lParts);
+	std::pair< std::vector<int>, std::vector<int> > rPair(rMachines, rParts);
+	clusters.push_back(lPair);
+	clusters.push_back(rPair);
+
+	std::cout << std::endl;
+	for (auto cluster : clusters)
+	{
+		std::cout << " Next cluster, machines: ";
+
+		for (auto el : cluster.first)
+			std::cout << el << " ";
+
+		std::cout << std::endl << " Parts: ";
+
+		for (auto el : cluster.second)
+			std::cout << el << " ";
+
+		std::cout << std::endl;
+	}
 }
 
 bool save_output(const std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, 
@@ -213,6 +257,7 @@ int main()
 	std::tie(partsMatches, machines, parts) =  read_file(fileName);
 	auto clusters = get_start_decision(partsMatches, machines, parts);
 	float result = count_score(clusters, partsMatches);
+	devide(clusters);
 	std::cout << result;
 	save_output(clusters, fileName.replace(fileName.size() - 3, fileName.size(), "sol"), machines, parts);
 	return 1;
