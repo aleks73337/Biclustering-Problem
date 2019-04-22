@@ -7,6 +7,25 @@
 #include <algorithm>
 #include <iomanip>
 
+void print_debug(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters)
+{
+	std::cout << std::endl;
+	std::cout << "===============DEBUG==================";
+	std::cout << std::endl;
+	for (auto cluster : clusters)
+	{
+		std::cout << "Machines: ";
+		for (auto el : cluster.first)
+			std::cout << el << " ";
+
+		std::cout << std::endl << " Parts: ";
+
+		for (auto el : cluster.second)
+			std::cout << el << " ";
+
+		std::cout << std::endl;
+	}
+}
 
 float count_score(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, std::vector< std::vector<int> >& partsMatches)
 {
@@ -137,7 +156,7 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 	do
 	{
 		std::cout << "New decision!" << std::endl;
-		int n_clusters = 8;
+		int n_clusters = 3;
 		for (int i = 0; i < n_clusters; i++)
 		{
 			std::pair< std::vector<int>, std::vector<int> > cluster;
@@ -149,20 +168,7 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 		for (int i = 0; i < parts; i++)
 			clusters[rand() % n_clusters].second.push_back(parts_seq[i]);
 
-		for (auto cluster : clusters)
-		{
-			std::cout << " Next cluster, machines: ";
-
-			for (auto el : cluster.first)
-				std::cout << el << " ";
-
-			std::cout << std::endl << " Parts: ";
-
-			for (auto el : cluster.second)
-				std::cout << el << " ";
-
-			std::cout << std::endl;
-		}
+		print_debug(clusters);
 	} while(!is_valid(clusters, machines, parts));
 	
 	return clusters;
@@ -173,6 +179,8 @@ void devide(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clus
 	//create 2 new vectors with machines
 	int nChange = rand() % clusters.size();
 	auto& toSplit = clusters[nChange];
+	if (toSplit.first.size() < 2 || toSplit.second.size() < 2)
+		return;
 	int nMachines = toSplit.first.size();
 	int nLMachines = nMachines % 2 == 0 ? nMachines / 2 : nMachines / 2 + 1;
 	int nRMachines = nMachines - nLMachines;
@@ -195,21 +203,25 @@ void devide(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clus
 	clusters.push_back(lPair);
 	clusters.push_back(rPair);
 
-	std::cout << std::endl;
-	for (auto cluster : clusters)
-	{
-		std::cout << " Next cluster, machines: ";
+	print_debug(clusters);
+}
 
-		for (auto el : cluster.first)
-			std::cout << el << " ";
+void combine(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, int nLCluster, int nRCluster)
+{
+	if (nLCluster == nRCluster)
+		return;
+	auto& lMachines = clusters[nLCluster].first;
+	auto& lParts = clusters[nLCluster].second;
 
-		std::cout << std::endl << " Parts: ";
+	auto& rMachines = clusters[nRCluster].first;
+	auto& rParts = clusters[nRCluster].second;
 
-		for (auto el : cluster.second)
-			std::cout << el << " ";
+	lMachines.insert(lMachines.end(), rMachines.begin(), rMachines.end());
+	lParts.insert(lParts.end(), rParts.begin(), rParts.end());
 
-		std::cout << std::endl;
-	}
+	clusters.erase(clusters.begin() + nRCluster);
+
+	print_debug(clusters);
 }
 
 bool save_output(const std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, 
@@ -251,14 +263,17 @@ bool save_output(const std::vector< std::pair< std::vector<int>, std::vector<int
 int main()
 {
 	srand(time(NULL));
-	std::string fileName = "30x90.txt";
+	std::string fileName = "20x20.txt";
 	std::vector<std::vector<int>> partsMatches;
 	int machines, parts;
 	std::tie(partsMatches, machines, parts) =  read_file(fileName);
 	auto clusters = get_start_decision(partsMatches, machines, parts);
 	float result = count_score(clusters, partsMatches);
 	devide(clusters);
-	std::cout << result;
+	int nClusters = clusters.size();
+	combine(clusters, rand() % nClusters, rand() % nClusters);
+	float new_result = count_score(clusters, partsMatches);
+	std::cout << std::endl << "Old: " << result << " New: " << new_result << std::endl;
 	save_output(clusters, fileName.replace(fileName.size() - 3, fileName.size(), "sol"), machines, parts);
 	return 1;
 }
