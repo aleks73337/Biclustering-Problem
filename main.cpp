@@ -47,7 +47,7 @@ float count_score(std::vector< std::pair< std::vector<int>, std::vector<int> > >
 		}
 	}
 
-	
+
 	for (int i = 0; i < partsMatches.size(); i++)
 	{
 		for (auto part : partsMatches[i])
@@ -74,23 +74,23 @@ std::tuple<std::vector<std::vector<int>>, int, int> read_file(const std::string 
 	int tmp_int;
 	while (std::getline(infile, line))
 	{
-	    //std::cout << line << std::endl;
-	    std::stringstream iss(line);
-	    if (counter	== 0)
-	    {
-	    	iss >> machines >> parts;
-	    }
-	    else
-	    {
-	    	std::vector<int> tmp_vec;
-	    	while(iss >> tmp_int)
-	    	{
-	    		tmp_vec.push_back(tmp_int);
-	    	};
-	    	tmp_vec.erase(tmp_vec.begin());
-	    	prevData.push_back(tmp_vec);
-	    }
-	    counter++;
+		//std::cout << line << std::endl;
+		std::stringstream iss(line);
+		if (counter == 0)
+		{
+			iss >> machines >> parts;
+		}
+		else
+		{
+			std::vector<int> tmp_vec;
+			while (iss >> tmp_int)
+			{
+				tmp_vec.push_back(tmp_int);
+			};
+			tmp_vec.erase(tmp_vec.begin());
+			prevData.push_back(tmp_vec);
+		}
+		counter++;
 	}
 
 	infile.close();
@@ -104,7 +104,7 @@ std::tuple<std::vector<std::vector<int>>, int, int> read_file(const std::string 
 		partsMatches.push_back(tmp_vec);
 	}
 
-	return {partsMatches, machines, parts};
+	return { partsMatches, machines, parts };
 }
 
 bool is_valid(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, int& machines, int& parts)
@@ -136,7 +136,7 @@ bool is_valid(std::vector< std::pair< std::vector<int>, std::vector<int> > >& cl
 		}
 	}
 
-	if(partsCounter != parts || machinesCounter != machines)
+	if (partsCounter != parts || machinesCounter != machines)
 		return false;
 
 	return true;
@@ -146,7 +146,7 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 {
 	std::vector< std::pair< std::vector<int>, std::vector<int> > > clusters;
 	std::vector<int> machines_seq, parts_seq;
-	
+
 	for (int i = 1; i <= machines; i++)
 		machines_seq.push_back(i);
 
@@ -169,8 +169,8 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 			clusters[rand() % n_clusters].second.push_back(parts_seq[i]);
 
 		print_debug(clusters);
-	} while(!is_valid(clusters, machines, parts));
-	
+	} while (!is_valid(clusters, machines, parts));
+
 	return clusters;
 }
 
@@ -182,18 +182,18 @@ void devide(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clus
 	if (toSplit.first.size() < 2 || toSplit.second.size() < 2)
 		return;
 	int nMachines = toSplit.first.size();
-	int nLMachines = nMachines % 2 == 0 ? nMachines / 2 : nMachines / 2 + 1;
+	int nLMachines = rand() % nMachines;
 	int nRMachines = nMachines - nLMachines;
 	std::vector<int> lMachines(nLMachines, 0),
-					 rMachines(nRMachines, 0);
+		rMachines(nRMachines, 0);
 	std::copy(toSplit.first.begin(), toSplit.first.begin() + nLMachines, lMachines.begin());
 	std::copy(toSplit.first.begin() + nLMachines, toSplit.first.end(), rMachines.begin());
 
 	int nParts = toSplit.second.size();
-	int nLParts = nParts % 2 == 0 ? nParts / 2 : nParts / 2 + 1;
+	int nLParts = rand() % nParts;
 	int nRParts = nParts - nLParts;
 	std::vector<int> lParts(nLParts, 0),
-				 	 rParts(nRParts, 0);
+		rParts(nRParts, 0);
 	std::copy(toSplit.second.begin(), toSplit.second.begin() + nLParts, lParts.begin());
 	std::copy(toSplit.second.begin() + nLParts, toSplit.second.end(), rParts.begin());
 	clusters.erase(clusters.begin() + nChange);
@@ -203,7 +203,6 @@ void devide(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clus
 	clusters.push_back(lPair);
 	clusters.push_back(rPair);
 
-	print_debug(clusters);
 }
 
 void move_machine(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, int nFrom, int nTo, int nMachine)
@@ -221,7 +220,6 @@ void move_machine(std::vector< std::pair< std::vector<int>, std::vector<int> > >
 
 	mTo.push_back(machine);
 
-	print_debug(clusters);
 }
 
 void move_part(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, int nFrom, int nTo, int nPart)
@@ -239,7 +237,6 @@ void move_part(std::vector< std::pair< std::vector<int>, std::vector<int> > >& c
 
 	pTo.push_back(part);
 
-	print_debug(clusters);
 }
 
 void combine(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, int nLCluster, int nRCluster)
@@ -256,15 +253,13 @@ void combine(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clu
 	lParts.insert(lParts.end(), rParts.begin(), rParts.end());
 
 	clusters.erase(clusters.begin() + nRCluster);
-
-	print_debug(clusters);
 }
 
-std::vector< std::pair< std::vector<int>, std::vector<int> > > 
+std::vector< std::pair< std::vector<int>, std::vector<int> > >
 local_search(std::vector< std::pair< std::vector<int>, std::vector<int> > > clusters,
-			 std::vector< std::vector<int> >& partsMatches)
+	std::vector< std::vector<int> >& partsMatches)
 {
-	int nClusters = clusters.size();
+	int nClusters = clusters.size() - 1;
 	auto prevClusters = clusters;
 	float new_score = 0;
 	float prevScore = count_score(prevClusters, partsMatches);
@@ -272,26 +267,41 @@ local_search(std::vector< std::pair< std::vector<int>, std::vector<int> > > clus
 	while (new_score < prevScore && nTries < 10)
 	{
 		clusters = prevClusters;
-		move_machine(clusters, rand() % nClusters, rand() % nClusters, rand() % 3);
-		move_part(clusters, rand() % nClusters, rand() % nClusters, rand() % 3);
+
+		int mClFrom = rand() % nClusters;
+		int mClTo = rand() % nClusters;
+		int nMachines = clusters[mClFrom].first.size() - 1;
+		if (!nMachines)
+			continue;
+		int nMachine = rand() % nMachines;
+		move_machine(clusters, mClFrom, mClTo, nMachine);
+
+		int pClFrom = rand() % nClusters;
+		int pClTo = rand() % nClusters;
+		int nParts = clusters[pClFrom].second.size() - 1;
+		if (!nParts)
+			continue;
+		int nPart = rand() % nParts;
+		move_part(clusters, pClFrom, pClTo, nPart);
+
 		new_score = count_score(clusters, partsMatches);
 		nTries++;
 	}
 	return clusters;
 }
 
-bool save_output(const std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, 
-				 const std::string& filename, const int& nMachines, const int& nParts)
+bool save_output(const std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters,
+	const std::string& filename, const int& nMachines, const int& nParts)
 {
 	std::fstream file;
-    file.open(filename, std::fstream::out);
+	file.open(filename, std::fstream::out);
 
-    if (!file.is_open())
-    	return false;
+	if (!file.is_open())
+		return false;
 
-    std::vector<int> machines(nMachines + 1, 0);
-    std::vector<int> parts(nParts + 1, 0);
-    int nClusters = clusters.size();
+	std::vector<int> machines(nMachines + 1, 0);
+	std::vector<int> parts(nParts + 1, 0);
+	int nClusters = clusters.size();
 
 	for (int i = 0; i < nClusters; i++)
 	{
@@ -304,16 +314,16 @@ bool save_output(const std::vector< std::pair< std::vector<int>, std::vector<int
 	machines.erase(machines.begin());
 	parts.erase(parts.begin());
 
-    for (auto el : machines)
-    	file << el << " ";
+	for (auto el : machines)
+		file << el << " ";
 
-    file << std::endl;
+	file << std::endl;
 
-    for (auto el : parts)
-    	file << el << " ";
+	for (auto el : parts)
+		file << el << " ";
 
-    file.close();
-    return true;
+	file.close();
+	return true;
 }
 
 int main()
@@ -322,16 +332,22 @@ int main()
 	std::string fileName = "20x20.txt";
 	std::vector<std::vector<int>> partsMatches;
 	int machines, parts;
-	std::tie(partsMatches, machines, parts) =  read_file(fileName);
+	std::tie(partsMatches, machines, parts) = read_file(fileName);
 	auto clusters = get_start_decision(partsMatches, machines, parts);
 	float result = count_score(clusters, partsMatches);
-	for (int i = 0; i < 10; i++)
-		clusters = local_search(clusters, partsMatches);
-	devide(clusters);
-	for (int i = 0; i < 10; i++)
-		clusters = local_search(clusters, partsMatches);
-	float new_result = count_score(clusters, partsMatches);
-	std::cout << std::endl << "Old: " << result << " New: " << new_result << " " << is_valid(clusters, machines, parts) << std::endl;
+	float new_result = 0;
+	while(result < 0.3)
+	{
+		devide(clusters);
+		do
+		{
+			result = new_result;
+			clusters = local_search(clusters, partsMatches);
+			new_result = count_score(clusters, partsMatches);
+		} while (new_result > result);
+		std::cout << std::endl << "Old: " << result << " New: " << new_result << " " << is_valid(clusters, machines, parts) << std::endl;
+	}
 	save_output(clusters, fileName.replace(fileName.size() - 3, fileName.size(), "sol"), machines, parts);
+	std::cin.get();
 	return 1;
 }
