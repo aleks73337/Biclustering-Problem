@@ -49,7 +49,7 @@ float count_score(std::vector< std::pair< std::vector<int>, std::vector<int> > >
 	}
 
 
-	for (int i = 0; i < partsMatches.size(); i++)
+	for (auto i = 0; i < partsMatches.size(); i++)
 	{
 		for (auto& part : partsMatches[i])
 		{
@@ -58,7 +58,7 @@ float count_score(std::vector< std::pair< std::vector<int>, std::vector<int> > >
 		}
 	}
 
-	double res = double(n1Clust) / double(n1All + n0Clust);
+	float res = float(n1Clust) / float(n1All + n0Clust);
 
 	return res;
 }
@@ -166,7 +166,7 @@ std::vector< std::pair< std::vector<int>, std::vector<int> > > get_start_decisio
 	do
 	{
 		std::cout << "New decision!" << std::endl;
-		int n_clusters = 5;
+		int n_clusters = 10;
 		for (int i = 0; i < n_clusters; i++)
 		{
 			std::pair< std::vector<int>, std::vector<int> > cluster;
@@ -230,7 +230,6 @@ void move_machine(std::vector< std::pair< std::vector<int>, std::vector<int> > >
 	mFrom.erase(mFrom.begin() + nMachine);
 
 	mTo.push_back(machine);
-
 }
 
 void move_part(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clusters, int nFrom, int nTo, int nPart)
@@ -268,38 +267,43 @@ void combine(std::vector< std::pair< std::vector<int>, std::vector<int> > >& clu
 
 std::vector< std::pair< std::vector<int>, std::vector<int> > >
 local_search(std::vector< std::pair< std::vector<int>, std::vector<int> > > clusters,
-	std::vector< std::vector<int> >& partsMatches, bool doDevide)
+	std::vector< std::vector<int> >& partsMatches, bool moveMachine)
 {
 	std::vector< std::pair< std::vector<int>, std::vector<int> > > bestSolution = clusters;
 	float bestScore = count_score(clusters, partsMatches);
 
-	if (doDevide)
+	for (auto i = 0; i < clusters.size(); i++)
 	{
-		for (int i = 0; i < clusters.size(); i++)
+		for (auto j = 0; j < clusters.size(); j++)
 		{
-			auto tmpSolution = clusters;
-			devide(clusters, i, 0);
-			float newScore = count_score(tmpSolution, partsMatches);
-			if (newScore > bestScore)
+			if (i == j)
+				continue;
+			if (moveMachine)
 			{
-				bestScore = newScore;
-				bestSolution = tmpSolution;
-			}
-		}
-	}
-	else
-	{
-		for (int i = 0; i < clusters.size(); i++)
-		{
-			for (int j = 0; j < clusters.size(); j++)
-			{
-				auto tmpSolution = clusters;
-				combine(tmpSolution, i, j);
-				float newScore = count_score(tmpSolution, partsMatches);
-				if (newScore > bestScore)
+				for (auto nMachine = 0; nMachine < clusters[i].first.size(); nMachine++)
 				{
-					bestScore = newScore;
-					bestSolution = tmpSolution;
+					auto tmpSolution = clusters;
+					move_machine(clusters, i, j, nMachine);
+					float newScore = count_score(tmpSolution, partsMatches);
+					if (newScore > bestScore)
+					{
+							bestScore = newScore;
+						bestSolution = tmpSolution;
+					}
+				}
+			}
+			else
+			{
+				for (auto nPart = 0; nPart < clusters[i].second.size(); nPart++)
+				{
+					auto tmpSolution = clusters;
+					move_part(clusters, i, j, nPart);
+					float newScore = count_score(tmpSolution, partsMatches);
+					if (newScore > bestScore)
+					{
+						bestScore = newScore;
+						bestSolution = tmpSolution;
+					}
 				}
 			}
 		}
@@ -347,22 +351,19 @@ bool save_output(const std::vector< std::pair< std::vector<int>, std::vector<int
 int main()
 {
 	srand(time(NULL));
-	std::string fileName = "20x20.txt";
+	std::string fileName = "30x90.txt";
 	std::vector<std::vector<int>> partsMatches;
 	int machines, parts;
 	std::tie(partsMatches, machines, parts) = read_file(fileName);
 	auto clusters = get_start_decision(partsMatches, machines, parts);
 
-	std::vector< std::pair<int, int> > N_k(20);
-
 	float bestScore = count_score(clusters, partsMatches);
 
-	for (int i = 0; i < 2000; i++)
+	for (int counter = 0; counter < 10000; counter++)
 	{
 		auto tmpClusters = clusters;
 		for (int i = 1; i < 3; i++)
 		{
-			tmpClusters = clusters;
 			int nClusters = tmpClusters.size();
 			if (i % 2)
 				devide(tmpClusters, rand() % (nClusters - 1), 0);
@@ -385,9 +386,9 @@ int main()
 
 		float newBestScore = count_score(tmpClusters, partsMatches);
 
-		if (bestScore < newBestScore)
+		if (bestScore < newBestScore && is_valid(tmpClusters, machines, parts))
 		{
-			std::cout << std::endl << "Old: " << bestScore << " New: " << newBestScore << " " << is_valid(tmpClusters, machines, parts) << std::endl;
+			std::cout << std::endl << "Old: " << bestScore << " New: " << newBestScore << std::endl;
 			clusters = tmpClusters;
 			bestScore = newBestScore;
 		}
